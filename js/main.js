@@ -1,0 +1,183 @@
+//GOAL: Proportional symbols representing attribute values of mapped features
+//STEPS:
+//1. Create the Leaflet map--done (in createMap())
+//2. Import GeoJSON data--done (in getData())
+//3. Add circle markers for point features to the map--done (in AJAX callback)
+//4. Determine which attribute to visualize with proportional symbols
+//5. For each feature, determine its value for the selected attribute
+//6. Give each feature's circle marker a radius based on its attribute value
+
+//1. Create the Leaflet map--done (in createMap())
+function createMap(){
+    //create the map
+    var map = L.map('map', {
+        center: [20, 0],
+        zoom: 2
+    });
+
+    //add OSM base tilelayer
+    L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+    }).addTo(map);
+
+    //call getData function
+    getData(map);
+};
+
+//calculate the radius of each proportional symbol
+function calcPropRadius(attValue) {
+    //scale factor to adjust symbol size evenly
+    var scaleFactor = 5;
+    //area based on attribute value and scale factor
+    var area = attValue * scaleFactor;
+    //radius calculated based on area
+    var radius = Math.sqrt(area/Math.PI);
+
+    return radius;
+};
+
+
+//calculate a color for each proportional symbol
+function calcColor(attValue) {
+    //scale factor to adjust symbol size evenly
+    return attValue >= 150 ? '#67000d' : // Means: if (d >= 1966) return 'green' else…
+    attValue >= 125 ? '#a50f15' : // if (d >= 1960) return 'black' else etc…
+    attValue >= 100 ? '#cb181d' :
+    attValue >= 75 ? '#ef3b2c' : // Note that numbers must be in descending order
+    attValue >= 50 ? '#fb6a4a' : // Note that numbers must be in descending order
+    attValue >= 25 ? '#fc9272' : // Note that numbers must be in descending order
+    attValue >= 10 ? '#fcbba1' : // Note that numbers must be in descending order
+    '#fff7ec';
+};
+
+
+
+// function for circle markers
+function createPropSymbols(data, map, attributes){
+    //create marker default options
+    var geojsonMarkerOptions = {
+        radius: 1,
+        fillColor: "#ff7800",
+        color: "#000",
+        weight: 0.1,
+        opacity: 1,
+        fillOpacity: 0.8
+    };
+    //add attribute
+    
+    var attribute = attributes[0];
+
+    //create a Leaflet GeoJSON layer and add it to the map
+    L.geoJson(data, {
+        pointToLayer: function (feature, latlng) {
+            var attValue = Number(feature.properties[attribute]);
+            //build popup content string
+            var year = attribute.split("_")[1];
+            var popupContent = "<p><b>City:</b> " + feature.properties.Urban_Agglomeration + ", " + feature.properties.Country_or_area + "</p><p><b>" + "PPM 2.5 in " + year + ":</b> " + Number(feature.properties[attribute]).toFixed(1) + "</p>";
+            //Step 6: Give each feature's circle marker a radius based on its attribute value
+            geojsonMarkerOptions.radius = calcPropRadius(attValue);
+            geojsonMarkerOptions.fillColor = calcColor(attValue);
+            //geojsonMarkerOptions.color = calcColor(attValue);
+            //console.log(feature.properties.ppm_1999, geojsonMarkerOptions.radius, geojsonMarkerOptions.fillColor);
+            //console.log(feature.properties, geojsonMarkerOptions.fillcolor);
+             //create circle marker layer
+            var layer = L.circleMarker(latlng, geojsonMarkerOptions);
+            //bind the popup to the circle marker
+            layer.bindPopup(popupContent)
+            //return layer;
+
+
+            //create circle markers
+            //return L.circleMarker(latlng, geojsonMarkerOptions)
+            return layer;
+        }
+    }).addTo(map);
+};
+
+
+//Step 10: Resize proportional symbols according to new attribute values
+function updatePropSymbols(map, attribute){
+    map.eachLayer(function(layer){
+         if (layer.feature && layer.feature.properties[attribute]){
+            //access feature properties
+            var props = layer.feature.properties;
+            console.log(layer)
+
+            //update each feature's radius based on new attribute values
+            var radius = calcPropRadius(props[attribute]);
+            layer.setRadius(radius);
+            //update color
+            var fillColo = calcColor(props[attribute]);
+            layer.setStyle({fillColor:fillColo});
+            //console.log(fillColo)
+             
+            //update popups
+            var year = attribute.split("_")[1];
+            var popupContent = "<p><b>City:</b> " + props.Urban_Agglomeration + ", " + props.Country_or_area + "</p><p><b>" + "PPM 2.5 in " + year + ":</b> " + Number(props[attribute]).toFixed(1) + "</p>";
+           
+
+            //replace the layer popup
+            layer.bindPopup(popupContent, {
+                offset: new L.Point(0,-radius)
+            });
+        };
+    });
+};
+
+
+//Step 1: Create new sequence controls
+function createSequenceControls(map, attributes){
+    //create range input element (slider)
+    $('#panel').append('<input class="range-slider" type="range">');
+   //set slider attributes
+    $('.range-slider').attr({
+        max: 21,
+        min: 0,
+        value: 0,
+        step: 1
+    });
+    $('#panel').append('<button class="skip" id="reverse">Back</button>');
+    $('#panel').append('<button class="skip" id="forward">Next</button>');
+    //Step 5: click listener for buttons
+    //Example 3.12 line 2...Step 5: click listener for buttons
+    $('.skip').click(function(){
+        //get the old index value
+        var index = $('.range-slider').val();
+
+        //Step 6: increment or decrement depending on button clicked
+        if ($(this).attr('id') == 'forward'){
+            index++;
+            //Step 7: if past the last attribute, wrap around to first attribute
+            index = index > 21 ? 0 : index;
+            updatePropSymbols(map, attributes[index]);
+        } else if ($(this).attr('id') == 'reverse'){
+            index--;
+            //Step 7: if past the first attribute, wrap around to last attribute
+            index = index < 0 ? 21 : index;
+            updatePropSymbols(map, attributes[index]);
+        };
+
+        //Step 8: update slider
+        $('.range-slider').val(index);
+    });
+};
+
+//Step 2: Import GeoJSON data
+function getData(map){
+    //load the data
+    $.ajax("data/cities_pop_estimates_Feature.geojson", {
+        dataType: "json",
+        success: function(response){
+             //create an attributes array
+            var attributes = ['ppm_1998','ppm_1999', 'ppm_2000', 'ppm_2001', 'ppm_2002', 'ppm_2003', 'ppm_2004', 'ppm_2005', 'ppm_2006', 'ppm_2007', 'ppm_2008', 'ppm_2009', 'ppm_2010', 'ppm_2011', 'ppm_2012', 'ppm_2013', 'ppm_2014', 'ppm_2015', 'ppm_2016', 'ppm_2017', 'ppm_2018', 'ppm_2019'];
+            
+            createPropSymbols(response, map,attributes);
+           createSequenceControls(map,attributes);
+        }
+    });
+};
+
+
+
+$(document).ready(createMap);
+
