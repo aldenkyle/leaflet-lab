@@ -41,7 +41,7 @@ function calcPropRadius(attValue) {
 function calcColor(attValue) {
     //scale factor to adjust symbol size evenly
     return attValue >= 100 ? '#67000d' : // Means: if (d >= 1966) return 'green' else…
-    attValue >= 75 ? '#a50f15' : // if (d >= 1960) return 'black' else etc…
+    attValue >= 75 ? '#a6d96a' : // if (d >= 1960) return 'black' else etc…
     attValue >= 50 ? '#ef3b2c' :
     attValue >= 25 ? '#fb6a4a' : // Note that numbers must be in descending order
     attValue >= 10 ? '#fee0d2' : // Note that numbers must be in descending order
@@ -50,31 +50,31 @@ function calcColor(attValue) {
 
 function calcColorChange(attValue) {
     //scale factor to adjust symbol size evenly
-    return attValue >= 50 ? '#d73027' : // Means: if (d >= 1966) return 'green' else…
-    attValue >= 25 ? '#f46d43' : // if (d >= 1960) return 'black' else etc…
-    attValue >= 10 ? '#fdae61' :
+    return attValue >= 50 ? '#66bd63' : // Means: if (d >= 1966) return 'green' else…
+    attValue >= 25 ? '#a6d96a' : // if (d >= 1960) return 'black' else etc…
+    attValue >= 10 ? '#d9ef8b' :
     attValue >= 0 ? '#fee08b' : // Note that numbers must be in descending order
-    attValue >= -10 ? '#d9ef8b' : // Note that numbers must be in descending order
-    attValue >= -25 ? '#a6d96a' : // Note that numbers must be in descending order
-    attValue >= -50 ? '#66bd63' : // Note that numbers must be in descending order
-    '#66bd63';
+    attValue >= -10 ? '#fdae61' : // Note that numbers must be in descending order
+    attValue >= -25 ? '#f46d43' : // Note that numbers must be in descending order
+    attValue >= -50 ? '#d73027' : // Note that numbers must be in descending order
+    '#67000d';
 };
 
 
 function calcColorPctChange(attValue) {
     //scale factor to adjust symbol size evenly
-    return attValue >= 50 ? '#67000d' : // Means: if (d >= 1966) return 'green' else…
-    attValue >= 25 ? '#d73027' : // if (d >= 1960) return 'black' else etc…
-    attValue >= 10 ? '#fdae61' :
+    return attValue >= 50 ? '#66bd63' : // Means: if (d >= 1966) return 'green' else…
+    attValue >= 25 ? '#a6d96a' : // if (d >= 1960) return 'black' else etc…
+    attValue >= 10 ? '#d9ef8b' :
     attValue >= 0 ? '#fee08b' : // Note that numbers must be in descending order
-    attValue >= -10 ? '#d9ef8b' : // Note that numbers must be in descending order
-    attValue >= -25 ? '#a6d96a' : // Note that numbers must be in descending order
-    attValue >= -50 ? '#66bd63' : // Note that numbers must be in descending order
-    '#66bd63';
+    attValue >= -10 ? '#fdae61' : // Note that numbers must be in descending order
+    attValue >= -25 ? '#f46d43' : // Note that numbers must be in descending order
+    attValue >= -50 ? '#d73027' : // Note that numbers must be in descending order
+    '#67000d';
 };
 
 // function for circle markers
-function createPropSymbols(data, map, attributes, viztypes){
+function createPropSymbols(data, map, attributes){
     //create marker default options
     var geojsonMarkerOptions = {
         radius: 1,
@@ -87,14 +87,13 @@ function createPropSymbols(data, map, attributes, viztypes){
     //add attribute
     
     var attribute = attributes[0];
-    var vistype = viztypes
 
     //create a Leaflet GeoJSON layer and add it to the map
     L.geoJson(data, {
         pointToLayer: function (feature, latlng) {
             var curVal = Number(feature.properties[attribute]);
-            //var histAvg = (feature.properties['ppm_1998'] + feature.properties['ppm_1999'] + feature.properties['ppm_2000']) / 3
-            var attValue = curVal
+            var histAvg = (feature.properties['ppm_1998'] + feature.properties['ppm_1999'] + feature.properties['ppm_2000']) / 3
+            var attValue = histAvg - curVal
             //build popup content string
             var year = attribute.split("_")[1];
             var popupContent = "<p><b>City:</b> " + feature.properties.Urban_Agglomeration + ", " + feature.properties.Country_or_area + "</p><p><b>" + "PPM 2.5 in " + year + ":</b> " + Number(feature.properties[attribute]).toFixed(1) + "</p>";
@@ -120,41 +119,29 @@ function createPropSymbols(data, map, attributes, viztypes){
 
 
 //Step 10: Resize proportional symbols according to new attribute values
-function updatePropSymbols(map, attribute,viztypef){
+function updatePropSymbols(map, attribute){
     map.eachLayer(function(layer){
          if (layer.feature && layer.feature.properties[attribute]){
             //access feature properties
-            viz_type = viztypef
-            console.log(viz_type)
             var props = layer.feature.properties;
-            //console.log(props)
-            // set up vars for this attribute
+            //console.log(layer)
+
+            //update each feature's radius based on new attribute values
             var curVal = Number(props[attribute]);
             var histAvg = (props['ppm_1998'] + props['ppm_1999'] + props['ppm_2000']) / 3
-            var chgVal =  curVal - histAvg
-            var pctChgVal = (histAvg - curVal)/histAvg*-100
-            //update color and size if percent change
-            if (viz_type == "ppm_viz"){
-            var radius = calcPropRadius(curVal);
-            layer.setRadius(radius);
-            //update color
-            var fillColo = calcColor(curVal);
-            layer.setStyle({fillColor:fillColo});}
-             //update color and size if percent change
-            else if (viz_type == "ppm_change") {
+            var chgVal = histAvg - curVal
             var radius = calcPropRadius(chgVal);
             layer.setRadius(radius);
-            var fillColo = calcColorChange(chgVal);
-            layer.setStyle({fillColor:fillColo});}
-            //update color and size if percent change
-            else if ( viz_type == "ppm_pctChange") {
-             var radius = calcPropRadius(pctChgVal);
-            layer.setRadius(radius);
-            var fillColo = calcColorPctChange(pctChgVal);
-            layer.setStyle({fillColor:fillColo});}   
+            //update color
+            var fillColo = calcColor(chgVal);
+            layer.setStyle({fillColor:fillColo});
+            //console.log(fillColo)
+             
             //update popups
             var year = attribute.split("_")[1];
-            var popupContent = "<p><b>City:</b> " + props.Urban_Agglomeration + ", " + props.Country_or_area + "</p><p><b>" + "PPM 2.5 in " + year + ":</b> " + curVal.toFixed(1) + "</p><p><b>" + "PPM 2.5 historical baseline (1998-2000):</b> " + histAvg.toFixed(1) + "</p>" + "</p><p><b>Change since historical baseline:</b> " + chgVal.toFixed(1) + "</p>" + "</p><p><b>Percent change since historical baseline:</b> " + pctChgVal.toFixed(1) + "%</p>";
+            var popupContent = "<p><b>City:</b> " + props.Urban_Agglomeration + ", " + props.Country_or_area + "</p><p><b>" + "PPM 2.5 in " + year + ":</b> " + curVal.toFixed(1) + "</p><p><b>" + "PPM 2.5 historical average:</b> " + histAvg.toFixed(1) + "</p>" + "</p><p><b>Change since historical average:</b> " + chgVal.toFixed(1) + "</p>";
+           
+
             //replace the layer popup
             layer.bindPopup(popupContent, {
                 offset: new L.Point(0,-radius)
@@ -165,27 +152,31 @@ function updatePropSymbols(map, attribute,viztypef){
 
 
 // Create Buttons to switch viz type
-function selectVizType(map, attributes, viztype2) {
+function selectVizType(map, attributes) {
     //create 3 buttons
     $('#panel2').append('<button class="vis_select" id="ppm" name="ppm" type="button">Measured PPM 2.5</button>')
     $('#panel2').append('<button class="vis_select" id="ppm_change" name="ppm_change" type="button">Change in PPM 2.5 since Baseline (1998-2000)</button>')
     $('#panel2').append('<button class="vis_select" id="ppm_pctChange" name="ppm_pctChange" type="button">% Change in PPM 2.5 since Baseline (1998-2000)</button>')
     // set up listenters so that when clicked, a var will change that will be used in UpdatePropSymbols
-    $('.vis_select').unbind().click(function(){
+    $('.vis_select').click(function(){
         //get the old index value
+        var viztype = "ppm_viz"
         if ($(this).attr('id') == 'ppm'){
-            viztype2 = "ppm_viz"
-            manageSequence(map,attributes, viztype2);}
+            viztype = "ppm_viz"
+            updatePropSymbols(map, attributes[viztype]);}
          else if ($(this).attr('id') == 'ppm_change'){
-            viztype2 = "ppm_change"
-            manageSequence(map,attributes, viztype2);}
+            viztype = "ppmChange_viz"
+            updatePropSymbols(map, attributes[viztype]);}
          else if ($(this).attr('id') == 'ppm_pctChange'){
-            viztype2 = "ppm_pctChange"
-            manageSequence(map,attributes, viztype2);}
+            viztype = "ppmPctChange_viz"
+            updatePropSymbols(map, attributes[viztype]);}
+        console.log(viztype)
     });
 }
+    
 
-function createControls(map){
+//Step 1: Create new sequence controls
+function createSequenceControls(map, attributes){
     //create range input element (slider)
     $('#panel').append('<input class="range-slider" type="range">');
    //set slider attributes
@@ -197,13 +188,9 @@ function createControls(map){
     });
     $('#panel').append('<button class="skip" id="reverse">Previous Year</button>');
     $('#panel').append('<button class="skip" id="forward">Next Year</button>');
-};
-
-//Step 1: Create new sequence controls
-function manageSequence(map, attributes, viztype){
     //Step 5: click listener for buttons
     //Example 3.12 line 2...Step 5: click listener for buttons
-    $('.skip').unbind().click(function(){
+    $('.skip').click(function(){
         //get the old index value
         var index = $('.range-slider').val();
 
@@ -212,12 +199,12 @@ function manageSequence(map, attributes, viztype){
             index++;
             //Step 7: if past the last attribute, wrap around to first attribute
             index = index > 21 ? 0 : index;
-            updatePropSymbols(map, attributes[index],viztype);
+            updatePropSymbols(map, attributes[index]);
         } else if ($(this).attr('id') == 'reverse'){
             index--;
             //Step 7: if past the first attribute, wrap around to last attribute
             index = index < 0 ? 21 : index;
-            updatePropSymbols(map, attributes[index],viztype);
+            updatePropSymbols(map, attributes[index]);
         };
 
         //Step 8: update slider
@@ -227,14 +214,9 @@ function manageSequence(map, attributes, viztype){
     $('.range-slider').click(function(){
         //get the old index value
         var index = $('.range-slider').val();
-        updatePropSymbols(map, attributes[index], viztype);
+        updatePropSymbols(map, attributes[index]);
         //console.log(index)
-        console.log(index)
-    })
-    //update even if it wasnt clicked
-    var index = $('.range-slider').val()
-    updatePropSymbols(map, attributes[index], viztype);
-    console.log(index, viztype)
+    });
 };
 
 //Step 2: Import GeoJSON data
@@ -245,13 +227,10 @@ function getData(map){
         success: function(response){
              //create an attributes array
             var attributes = ['ppm_1998','ppm_1999', 'ppm_2000', 'ppm_2001', 'ppm_2002', 'ppm_2003', 'ppm_2004', 'ppm_2005', 'ppm_2006', 'ppm_2007', 'ppm_2008', 'ppm_2009', 'ppm_2010', 'ppm_2011', 'ppm_2012', 'ppm_2013', 'ppm_2014', 'ppm_2015', 'ppm_2016', 'ppm_2017', 'ppm_2018', 'ppm_2019'];
-            viztype = "ppm_viz"
             
-            createPropSymbols(response, map,attributes,viztype);
-            createControls(map);
-            selectVizType(map,attributes,viztype);
-            manageSequence(map,attributes, viztype);
-
+            createPropSymbols(response, map,attributes);
+            createSequenceControls(map,attributes);
+            selectVizType(map,attributes);
         }
     });
 };
