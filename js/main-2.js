@@ -12,7 +12,7 @@ function createMap(){
     //create the map
     var map = L.map('map', {
         center: [20, 0],
-        zoom: 2
+        zoom: 3
     });
 
     //add OSM base tilelayer
@@ -41,13 +41,13 @@ function calcPropRadius(attValue) {
 function calcColor(attValue) {
     //scale factor to adjust symbol size evenly
     return attValue >= 50 ? '#66bd63' : // Means: if (d >= 1966) return 'green' else…
-    attValue >= 25 ? '#a6d96af46d43' : // if (d >= 1960) return 'black' else etc…
+    attValue >= 25 ? '#a6d96a' : // if (d >= 1960) return 'black' else etc…
     attValue >= 10 ? '#d9ef8b' :
     attValue >= 0 ? '#fee08b' : // Note that numbers must be in descending order
     attValue >= -10 ? '#fdae61' : // Note that numbers must be in descending order
     attValue >= -25 ? '#f46d43' : // Note that numbers must be in descending order
     attValue >= -50 ? '#d73027' : // Note that numbers must be in descending order
-    '#1a9850';
+    '#67000d';
 };
 
 
@@ -165,6 +165,13 @@ function createSequenceControls(map, attributes){
         //Step 8: update slider
         $('.range-slider').val(index);
     });
+    //click listener for clicking on range
+    $('.range-slider').click(function(){
+        //get the old index value
+        var index = $('.range-slider').val();
+        updatePropSymbols(map, attributes[index]);
+        //console.log(index)
+    });
 };
 
 //Step 2: Import GeoJSON data
@@ -177,7 +184,7 @@ function getData(map){
             var attributes = ['ppm_1998','ppm_1999', 'ppm_2000', 'ppm_2001', 'ppm_2002', 'ppm_2003', 'ppm_2004', 'ppm_2005', 'ppm_2006', 'ppm_2007', 'ppm_2008', 'ppm_2009', 'ppm_2010', 'ppm_2011', 'ppm_2012', 'ppm_2013', 'ppm_2014', 'ppm_2015', 'ppm_2016', 'ppm_2017', 'ppm_2018', 'ppm_2019'];
             
             createPropSymbols(response, map,attributes);
-           createSequenceControls(map,attributes);
+            createSequenceControls(map,attributes);
         }
     });
 };
