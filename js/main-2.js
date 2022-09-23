@@ -22,7 +22,7 @@ function createMap(){
     }).addTo(map);
     //move the zoom control
     L.control.zoom({
-    position: 'topright'
+    position: 'topleft'
     }).addTo(map);
 
     //call getData function
@@ -78,6 +78,8 @@ function calcColorPctChange(attValue) {
     '#66bd63';
 };
 
+
+
 // function for circle markers
 function createPropSymbols(data, map, attributes, viztypes){
     //create marker default options
@@ -98,29 +100,25 @@ function createPropSymbols(data, map, attributes, viztypes){
     L.geoJson(data, {
         pointToLayer: function (feature, latlng) {
             var curVal = Number(feature.properties[attribute]);
-            //var histAvg = (feature.properties['ppm_1998'] + feature.properties['ppm_1999'] + feature.properties['ppm_2000']) / 3
             var attValue = curVal
             //build popup content string
             var year = attribute.split("_")[1];
-            var popupContent = "<p><b>City:</b> " + feature.properties.Urban_Agglomeration + ", " + feature.properties.Country_or_area + "</p><p><b>" + "PPM 2.5 in " + year + ":</b> " + Number(feature.properties[attribute]).toFixed(1) + "</p>";
+            var popupContent = "<p><b>City:</b> " + feature.properties.Urban_Agglomeration + ", " + feature.properties.Country_or_area + "</p><p><b>" + "PM2.5 in " + year + ":</b> " + Number(feature.properties[attribute]).toFixed(1) + "</p>";
             //Step 6: Give each feature's circle marker a radius based on its attribute value
             geojsonMarkerOptions.radius = calcPropRadius(attValue);
             geojsonMarkerOptions.fillColor = calcColor(attValue);
-            //geojsonMarkerOptions.color = calcColor(attValue);
-            //console.log(feature.properties.ppm_1999, geojsonMarkerOptions.radius, geojsonMarkerOptions.fillColor);
-            //console.log(feature.properties, geojsonMarkerOptions.fillcolor);
              //create circle marker layer
-            var layer = L.circleMarker(latlng, geojsonMarkerOptions);
+            var markersLayer = L.circleMarker(latlng, geojsonMarkerOptions);
             //bind the popup to the circle marker
-            layer.bindPopup(popupContent)
+            markersLayer.bindPopup(popupContent)
             //return layer;
-
-
             //create circle markers
             //return L.circleMarker(latlng, geojsonMarkerOptions)
-            return layer;
+            return markersLayer;
         }
+        
     }).addTo(map);
+
 };
 
 
@@ -130,7 +128,6 @@ function updatePropSymbols(map, attribute,viztypef){
          if (layer.feature && layer.feature.properties[attribute]){
             //access feature properties
             viz_type = viztypef
-            console.log(viz_type)
             var props = layer.feature.properties;
             //console.log(props)
             // set up vars for this attribute
@@ -159,7 +156,7 @@ function updatePropSymbols(map, attribute,viztypef){
             layer.setStyle({fillColor:fillColo});}   
             //update popups
             var year = attribute.split("_")[1];
-            var popupContent = "<p><b>City:</b> " + props.Urban_Agglomeration + ", " + props.Country_or_area + "</p><p><b>" + "PPM 2.5 in " + year + ":</b> " + curVal.toFixed(1) + "</p><p><b>" + "PPM 2.5 historical baseline (1998-2000):</b> " + histAvg.toFixed(1) + "</p>" + "</p><p><b>Change since historical baseline:</b> " + chgVal.toFixed(1) + "</p>" + "</p><p><b>Percent change since historical baseline:</b> " + pctChgVal.toFixed(1) + "%</p>";
+            var popupContent = "<p><b>City:</b> " + props.Urban_Agglomeration + ", " + props.Country_or_area + "</p><p><b>" + "PM2.5 in " + year + ":</b> " + curVal.toFixed(1) + "</p><p><b>" + "PM2.5 historical baseline (1998-2000):</b> " + histAvg.toFixed(1) + "</p>" + "</p><p><b>Change since historical baseline:</b> " + chgVal.toFixed(1) + "</p>" + "</p><p><b>Percent change since historical baseline:</b> " + pctChgVal.toFixed(1) + "%</p>";
             //replace the layer popup
             layer.bindPopup(popupContent, {
                 offset: new L.Point(0,-radius)
@@ -173,10 +170,9 @@ function updatePropSymbols(map, attribute,viztypef){
 // Create Buttons to switch viz type
 function selectVizType(map, attributes, viztype2) {
     //create 3 buttons
-    $('#panel2').append(document.createTextNode("Select Visualization: "))
-    $('#panel2').append('<button class="vis_select active" id="ppm" name="ppm" type="button">Measured PPM 2.5</button>')
-    $('#panel2').append('<button class="vis_select" id="ppm_change" name="ppm_change" type="button">Change in PPM 2.5 since Baseline (1998-2000)</button>')
-    $('#panel2').append('<button class="vis_select" id="ppm_pctChange" name="ppm_pctChange" type="button">% Change in PPM 2.5 since Baseline (1998-2000)</button>')
+    $('#panel2').append('<button class="vis_select active" id="ppm" name="ppm" type="button">Estimated PM2.5</button>')
+    $('#panel2').append('<button class="vis_select" id="ppm_change" name="ppm_change" type="button">Change in PM2.5 since Baseline (1998-2000)</button>')
+    $('#panel2').append('<button class="vis_select" id="ppm_pctChange" name="ppm_pctChange" type="button">% Change in PM2.5 since Baseline (1998-2000)</button>')
     // set up listenters so that when clicked, a var will change that will be used in UpdatePropSymbols
     $('.vis_select').unbind().click(function(){
         //change color of selected button
@@ -196,6 +192,7 @@ function selectVizType(map, attributes, viztype2) {
 }
 
 function createControls(map,year){
+    $('#panel').append('<button class="skip" id="reverse">Previous Year</button>');
     //create range input element (slider)
     $('#panel').append('<input class="range-slider" type="range">');
    //set slider attributes
@@ -205,9 +202,9 @@ function createControls(map,year){
         value: 0,
         step: 1
     });
-    $('#panel').append('<button class="skip" id="reverse">Previous Year</button>');
-    $('#panel').append('<button class="skip" id="forward">Next Year</button>');
     $('#panel').append('<button class="skip" id="curr_year">' + year +'</button>');
+    $('#panel').append('<button class="skip" id="forward">Next Year</button>');
+    
 };
 
 //Step 1: Create new sequence controls
@@ -245,8 +242,22 @@ function manageSequence(map, attributes, viztype){
     //update even if it wasnt clicked
     var index = $('.range-slider').val()
     updatePropSymbols(map, attributes[index], viztype);
-    console.log(index, viztype)
 };
+
+
+function searchByAjax(text, callResponse)//callback for 3rd party ajax requests
+{
+    return $.ajax({
+        url: "data/cities_pop_estimates_Feature.geojson",	//read comments in search.php for more information usage
+        type: 'GET',
+        data: {q: text},
+        dataType: 'json',
+        success: function(json) {
+            callResponse(json);
+        }
+    });
+}
+
 
 //Step 2: Import GeoJSON data
 function getData(map){
@@ -254,7 +265,7 @@ function getData(map){
     $.ajax("data/cities_pop_estimates_Feature.geojson", {
         dataType: "json",
         success: function(response){
-             //create an attributes array
+             //create an attributes array, base year and base viz
             var attributes = ['ppm_1998','ppm_1999', 'ppm_2000', 'ppm_2001', 'ppm_2002', 'ppm_2003', 'ppm_2004', 'ppm_2005', 'ppm_2006', 'ppm_2007', 'ppm_2008', 'ppm_2009', 'ppm_2010', 'ppm_2011', 'ppm_2012', 'ppm_2013', 'ppm_2014', 'ppm_2015', 'ppm_2016', 'ppm_2017', 'ppm_2018', 'ppm_2019'];
             viztype = "ppm_viz"
             year = "1998"
@@ -263,10 +274,14 @@ function getData(map){
             createControls(map, year);
             selectVizType(map,attributes,viztype);
             manageSequence(map,attributes, viztype);
-
         }
     });
 };
+
+
+
+
+
 
 
 
