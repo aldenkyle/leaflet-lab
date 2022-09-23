@@ -93,13 +93,41 @@ textarea {
 }
 
 #panel {
-    width: 50%;
+    width: 100%;
+    height: 50px;
     padding: 10px;
     display: inline-block;
     vertical-align: top;
     text-align: center;
     line-height: 42px;
+    position: relative;
+    bottom: 100;
+    background-color: rgba(40, 55, 71,.7);
 }
+
+#head-desc {
+    width: 100%;
+    height: 50px;
+    padding: 10px;
+    display: inline-block;
+    vertical-align: top;
+    text-align: center;
+    line-height: 42px;
+    position: relative;
+    bottom: 100;
+    background-color: rgba(40, 55, 71,.7);
+}
+
+#panel2 {
+    width: 100%;
+    padding: 10px;
+    display: inline-block;
+    vertical-align: top;
+    text-align: center;
+    line-height: 42px;
+    background-color: rgba(40, 55, 71,.7);
+}
+
 
 .range-slider {
     width: 70%;
@@ -107,16 +135,28 @@ textarea {
 
 #forward {
     float: right;
+    margin-right: 3%;
     font-size: 16px;
     padding: 10px 24px;
     border-radius: 12px;
+    border: 2px solid #ffffff;
+}
+
+#curr_year {
+    margin-left: 3%;
+    font-size: 16px;
+    padding: 10px 24px;
+    border-radius: 12px;
+    border: 2px solid #ffffff;
 }
 
 #reverse {
     float: left;
+    margin-left: 3%;
     font-size: 16px;
     padding: 10px 24px;
     border-radius: 12px;
+    border: 2px solid #ffffff;
 }
 
 
@@ -157,38 +197,32 @@ input[type="range"]::-webkit-slider-thumb {
 input[type="range"]:focus::-webkit-slider-thumb {   
   border: 1px solid #053a5f;
   outline: 3px solid #053a5f;
-  outline-offset: 0.125rem; 
 }
 
 
-#panel2 {
-    width: 50%;
-    padding: 10px;
-    display: inline-block;
-    vertical-align: top;
-    text-align: center;
-    line-height: 42px;
-}
 
-#ppm {
+
+.vis_select {
     float: center;
+    margin-right: 5px;
+    margin-left: 5px;
     font-size: 16px;
-    padding: 10px 24px;
+    padding: 10px 10px;
     border-radius: 12px;
+    border: 2px solid #ffffff;
+    margin-top: 5px;
+    margin-bottom: 5px;
 }
-#ppm_change {
-    float: center;
-    font-size: 16px;
-    padding: 10px 24px;
-    border-radius: 12px;
+.vis_select.active {
+    background-color: #76b5c5;
+    color: white;
+    border: 2px solid #ffffff;
+    margin-right: 5px;
+    margin-left: 5px;
+    margin-top: 5px;
+    margin-bottom: 5px;
 }
 
-#ppm_pctChange {
-    float: center;
-    font-size: 16px;
-    padding: 10px 24px;
-    border-radius: 12px;
-}
 
 
 /* ==========================================================================

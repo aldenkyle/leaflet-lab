@@ -12,12 +12,17 @@ function createMap(){
     //create the map
     var map = L.map('map', {
         center: [20, 0],
-        zoom: 3
+        zoom: 3,
+        zoomControl: false
     });
 
     //add OSM base tilelayer
     L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+    }).addTo(map);
+    //move the zoom control
+    L.control.zoom({
+    position: 'topright'
     }).addTo(map);
 
     //call getData function
@@ -159,6 +164,7 @@ function updatePropSymbols(map, attribute,viztypef){
             layer.bindPopup(popupContent, {
                 offset: new L.Point(0,-radius)
             });
+            $("#curr_year").html(year);
         };
     });
 };
@@ -167,12 +173,16 @@ function updatePropSymbols(map, attribute,viztypef){
 // Create Buttons to switch viz type
 function selectVizType(map, attributes, viztype2) {
     //create 3 buttons
-    $('#panel2').append('<button class="vis_select" id="ppm" name="ppm" type="button">Measured PPM 2.5</button>')
+    $('#panel2').append(document.createTextNode("Select Visualization: "))
+    $('#panel2').append('<button class="vis_select active" id="ppm" name="ppm" type="button">Measured PPM 2.5</button>')
     $('#panel2').append('<button class="vis_select" id="ppm_change" name="ppm_change" type="button">Change in PPM 2.5 since Baseline (1998-2000)</button>')
     $('#panel2').append('<button class="vis_select" id="ppm_pctChange" name="ppm_pctChange" type="button">% Change in PPM 2.5 since Baseline (1998-2000)</button>')
     // set up listenters so that when clicked, a var will change that will be used in UpdatePropSymbols
     $('.vis_select').unbind().click(function(){
-        //get the old index value
+        //change color of selected button
+        $('button').removeClass('active');
+        $(this).addClass('active');
+        // if the button is slected, change the viztype, then run manage, update
         if ($(this).attr('id') == 'ppm'){
             viztype2 = "ppm_viz"
             manageSequence(map,attributes, viztype2);}
@@ -185,7 +195,7 @@ function selectVizType(map, attributes, viztype2) {
     });
 }
 
-function createControls(map){
+function createControls(map,year){
     //create range input element (slider)
     $('#panel').append('<input class="range-slider" type="range">');
    //set slider attributes
@@ -197,6 +207,7 @@ function createControls(map){
     });
     $('#panel').append('<button class="skip" id="reverse">Previous Year</button>');
     $('#panel').append('<button class="skip" id="forward">Next Year</button>');
+    $('#panel').append('<button class="skip" id="curr_year">' + year +'</button>');
 };
 
 //Step 1: Create new sequence controls
@@ -246,9 +257,10 @@ function getData(map){
              //create an attributes array
             var attributes = ['ppm_1998','ppm_1999', 'ppm_2000', 'ppm_2001', 'ppm_2002', 'ppm_2003', 'ppm_2004', 'ppm_2005', 'ppm_2006', 'ppm_2007', 'ppm_2008', 'ppm_2009', 'ppm_2010', 'ppm_2011', 'ppm_2012', 'ppm_2013', 'ppm_2014', 'ppm_2015', 'ppm_2016', 'ppm_2017', 'ppm_2018', 'ppm_2019'];
             viztype = "ppm_viz"
+            year = "1998"
             
             createPropSymbols(response, map,attributes,viztype);
-            createControls(map);
+            createControls(map, year);
             selectVizType(map,attributes,viztype);
             manageSequence(map,attributes, viztype);
 

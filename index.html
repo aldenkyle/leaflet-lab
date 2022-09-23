@@ -1,31 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width">
 		<title>Progress on Polution?</title>
-		<!--put your external stylesheet links here-->
 		<link rel="stylesheet" href="css/style.css">
+        <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+        html, body, #map {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
 	</head>
 	<body>
         <body style="background-color:#283747;"></body>
-    <h1 style="margin-left:1em; color: whitesmoke; font-size:22px">
-      Progress on Polution? Changes in measured particulate matter from 1998 to 2019
-    </h1>
-    <p
-      style="margin-left:2em;margin-right:2em;color: whitesmoke; font-size:14px"
-    >
-      Words Words words
-      <a href="https://forms.gle/UM9NceXecmSba2Pd8" target="_blank">here!</a>
-        <br /></p>
-        <div id="map" style=" height: 800px; width: 100%" ></div>
-        <div id="panel", style=" height: 10%; width: 100%" ></div>
-        <div id="panel2", style=" height: 10%; width: 100%" ></div>
+        <div id="map" style="z-index: 1; position: absolute; top: 0; left: 0;"></div>
+        <div id="head-desc" style="z-index: 2; position: absolute; top: 0; left: 0;" ></div>
+        <div id="panel" style="z-index: 2; position: absolute; bottom: 0; left: 0;" ></div>
+        <div id="panel2", style="z-index: 3; position: absolute; bottom: 70px; left: 0;" ></div>
         <script type="text/javascript" src="lib/jquery-3.6.1.js"></script>
+        <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
         <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
    integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
    crossorigin=""></script>
         <script type="text/javascript" src="js/main-2.js"></script>
+        
         <!--script type="text/javascript" src="js/geojson.js"></script>
         
    
