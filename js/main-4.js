@@ -171,7 +171,7 @@ function updatePropSymbols(map, attribute,viztypef){
 
 
 // Create Buttons to switch viz type
-function selectVizType(map, attributes, viztype2) {
+function selectVizType(map, data, attributes, viztype2) {
     //create 3 buttons
     $('#panel2').append('<button class="vis_select active" id="ppm" name="ppm" type="button">Estimated PM2.5</button>')
     $('#panel2').append('<button class="vis_select" id="ppm_change" name="ppm_change" type="button">Change in PM2.5 since Baseline (1998-2000)</button>')
@@ -184,14 +184,19 @@ function selectVizType(map, attributes, viztype2) {
         // if the button is slected, change the viztype, then run manage, update
         if ($(this).attr('id') == 'ppm'){
             viztype2 = "ppm_viz"
-            manageSequence(map,attributes, viztype2);}
+            manageSequence(map,attributes, viztype2);
+         updateLegend(map, data, attributes,viztype2);}
          else if ($(this).attr('id') == 'ppm_change'){
             viztype2 = "ppm_change"
-            manageSequence(map,attributes, viztype2);}
+            manageSequence(map,attributes, viztype2);
+             updateLegend(map, data, attributes,viztype2);}
+         
          else if ($(this).attr('id') == 'ppm_pctChange'){
             viztype2 = "ppm_pctChange"
-            manageSequence(map,attributes, viztype2);}
+            manageSequence(map,attributes, viztype2);
+         updateLegend(map, data, attributes,viztype2)}
     });
+   
 }
 
 function createControls(map,year){
@@ -247,55 +252,58 @@ function manageSequence(map, attributes, viztype){
     updatePropSymbols(map, attributes[index], viztype);
 };
 
-
-//create original legend
-function processData(data, attributes){
-    var pmList = attribute[0];
-    var min = Infinity;
+//get max from an object
+function getMax(arr, prop) {
     var max = -Infinity;
-    for (var feature in data.features) {
-        var properties = data.features[feature].properties; 
-        for (var attribute in properties) {
-            if ( attribute != 'id' &&
-                attribute != 'name' &&
-                attribute != 'lat' &&
-                attribute != 'lon' ) {
-                
-                if (properties[attribute] < min) {
-                    min = properties[attribute];
-                    }
-            if (properties[attribute] > max) { 
-                max = properties[attribute]; 
-            }
-            }
-        }
+    for (var i=0 ; i<arr.length ; i++) {
+        //console.log(arr[i].properties[prop])
+        if (max == null || parseInt(arr[i].properties[prop]) > 
+            max)
+            max = arr[i].properties[prop];
+        //console.log(max)
     }
-    return {
-        min : min,
-        max : max
-        }
-    
+    return max;
+}
+
+//get max from an object
+function getMin(arr, prop) {
+    var min = Infinity;
+    for (var i=0 ; i<arr.length ; i++) {
+        if (min == null || parseInt(arr[i].properties[prop]) < min)
+            min = arr[i].properties[prop];
+    }
+    return min;
+}
+
+// get min and max from 1998 as a test
+function minMax1998(data, attributes) {
+    var min1998 = getMin(data.responseJSON.features, attributes[0])
+    console.log(min1998)
+    var max1998 = getMax(data.responseJSON.features, attributes[0])
+    console.log(max1998)
+    return min1998;
+    return max1998;
     
 }
 
 
-//update legend
 
-
-
-//create legend
-function createLegend(min, max) {
+//create original legend
+function createLegend(map, data, attributes,viztype) {
+    console.log(viztype)
+    var min = getMin(data.responseJSON.features, attributes[0])
+    var max = getMax(data.responseJSON.features, attributes[0])
     if (min < 10) {	
 			min = 10; 
 		}
 		function roundNumber(inNumber) {
 				return (Math.round(inNumber/10) * 10);  
 		}
-		var legend = L.control( { position: bottomright } );
+		var legend = L.control( { position: 'topleft' } );
 		legend.onAdd = function(map) {
 		var legendContainer = L.DomUtil.create("div", "legend");  
 		var symbolsContainer = L.DomUtil.create("div", "symbolsContainer");
-		var classes = [roundNumber(min), roundNumber((max-min)/2), roundNumber(max)]; 
+		var classes = [roundNumber(min), roundNumber((max-min)/2.5), roundNumber(max)]; 
 		var legendCircle;  
 		var lastRadius = 0;
 		var currentRadius;
@@ -303,52 +311,120 @@ function createLegend(min, max) {
 		L.DomEvent.addListener(legendContainer, 'mousedown', function(e) { 
 			L.DomEvent.stopPropagation(e); 
 		});  
-		$(legendContainer).append("<h2 id='legendTitle'> of somethings</h2>");
-		
+		$(legendContainer).append("<h2 id='legendTitle'>Average <br> Annual PM2.5</h2>");
 		for (var i = 0; i <= classes.length-1; i++) {  
-
 			legendCircle = L.DomUtil.create("div", "legendCircle");  
-			
 			currentRadius = calcPropRadius(classes[i]);
-			
 			margin = -currentRadius - lastRadius - 2;
-
 			$(legendCircle).attr("style", "width: " + currentRadius*2 + 
 				"px; height: " + currentRadius*2 + 
-				"px; margin-left: " + margin + "px" );				
+				"px; margin-left: " + margin + "px");				
 			$(legendCircle).append("<span class='legendValue'>"+classes[i]+"</span>");
-
 			$(symbolsContainer).append(legendCircle);
-
 			lastRadius = currentRadius;
 		}
 		$(legendContainer).append(symbolsContainer); 
-
 		return legendContainer; 
-
 		};
-
 		legend.addTo(map);  
-
+// add color legend
+    var legend2 = L.control({position: 'topleft'});
+    legend2.onAdd = function(map) { 
+    var div = L.DomUtil.create('div', 'info legend'),
+    grades = [0,10,25,50,75,100];
+    for (var i = 0; i < grades.length; i++) {
+    div.innerHTML += '<i style="background:' + calcColor(grades[i] + 1) + '"></i> ' + grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+    }
+    return div;
+    };
+    legend2.addTo(map);
+    
 	} // end createLegend();
+
+
+//update legend
+function updateLegend(map, data, attributes,viztype2) {
+    legend.remove()
+    legend2.remove()
+    console.log(viztype2)
+    if (viztype == "ppm_viz") {
+    var min = getMin(data.responseJSON.features, attributes[0])
+    var max = getMax(data.responseJSON.features, attributes[0])
+    if (min < 10) {	
+			min = 10; 
+		}
+		function roundNumber(inNumber) {
+				return (Math.round(inNumber/10) * 10);  
+		}
+		var legend = L.control( { position: 'topleft' } );
+		legend.onAdd = function(map) {
+		var legendContainer = L.DomUtil.create("div", "legend");  
+		var symbolsContainer = L.DomUtil.create("div", "symbolsContainer");
+		var classes = [roundNumber(min), roundNumber((max-min)/2.5), roundNumber(max)]; 
+		var legendCircle;  
+		var lastRadius = 0;
+		var currentRadius;
+		var margin;
+		L.DomEvent.addListener(legendContainer, 'mousedown', function(e) { 
+			L.DomEvent.stopPropagation(e); 
+		});  
+		$(legendContainer).append("<h2 id='legendTitle'>Average <br> Annual PM2.5</h2>");
+		for (var i = 0; i <= classes.length-1; i++) {  
+			legendCircle = L.DomUtil.create("div", "legendCircle");  
+			currentRadius = calcPropRadius(classes[i]);
+			margin = -currentRadius - lastRadius - 2;
+			$(legendCircle).attr("style", "width: " + currentRadius*2 + 
+				"px; height: " + currentRadius*2 + 
+				"px; margin-left: " + margin + "px");				
+			$(legendCircle).append("<span class='legendValue'>"+classes[i]+"</span>");
+			$(symbolsContainer).append(legendCircle);
+			lastRadius = currentRadius;
+		}
+		$(legendContainer).append(symbolsContainer); 
+		return legendContainer; 
+		};
+		legend.addTo(map);  
+// add color legend
+    var legend2 = L.control({position: 'topleft'});
+    legend2.onAdd = function(map) { 
+    var div = L.DomUtil.create('div', 'info legend'),
+    grades = [0,10,25,50,75,100];
+    for (var i = 0; i < grades.length; i++) {
+    div.innerHTML += '<i style="background:' + calcColor(grades[i] + 1) + '"></i> ' + grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+    }
+    return div;
+    };
+    legend2.addTo(map);
+    
+	} 
+    else if (viztype == "ppm_change") {
+        console.log("ppm viz change")
+    } 
+    else if (viztype == "ppm_pctChange") {
+        console.log("ppm viz % change")
+    } 
+    // end createLegend();
+}
+
 
 
 //Step 2: Import GeoJSON data
 function getData(map){
     //load the data
-    $.ajax("data/cities_pop_estimates_Feature.geojson", {
+    data = $.ajax("data/cities_pop_estimates_Feature.geojson", {
         dataType: "json",
         success: function(response){
              //create an attributes array, base year and base viz
             var attributes = ['ppm_1998','ppm_1999', 'ppm_2000', 'ppm_2001', 'ppm_2002', 'ppm_2003', 'ppm_2004', 'ppm_2005', 'ppm_2006', 'ppm_2007', 'ppm_2008', 'ppm_2009', 'ppm_2010', 'ppm_2011', 'ppm_2012', 'ppm_2013', 'ppm_2014', 'ppm_2015', 'ppm_2016', 'ppm_2017', 'ppm_2018', 'ppm_2019'];
             viztype = "ppm_viz"
             year = "1998"
-            var info = processData(data)
+            minMax1998(data, attributes)
             createPropSymbols(response, map,attributes,viztype);
             createControls(map, year);
-            selectVizType(map,attributes,viztype);
+            createLegend(map, data, attributes,viztype);
+            selectVizType(map,data,attributes,viztype);
             manageSequence(map,attributes, viztype);
-            createPropLegend(map, attributes,viztype)
+            
         }
     });
 };
