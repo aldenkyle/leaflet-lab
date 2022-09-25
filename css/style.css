@@ -231,12 +231,6 @@ input[type="range"]:focus::-webkit-slider-thumb {
  font-family: Arial;
 }
 
-.header h1  {
- color: white;
- font-size: 22px;
-
-}
-
 
 .legend, .temporal-legend {
 	padding: 6px 10px;
@@ -248,12 +242,13 @@ input[type="range"]:focus::-webkit-slider-thumb {
 }
 #legendTitle {
  	text-align: center;
- 	margin-bottom: 15px;
+ 	margin-bottom: 6px;
+    margin-top: 6px;
 	font-variant: small-caps;
 }
 .symbolsContainer {
 	float: left;
-	margin-left: 50px;
+	margin-left: 40%;
 }
 .legendCircle {
  	border-radius:50%; 
@@ -263,7 +258,7 @@ input[type="range"]:focus::-webkit-slider-thumb {
 }
 .legendValue {
 	position: absolute;
-	right: 8px;
+	right: 20%;
 }
 .colorLegend {
 padding: 6px 8px;

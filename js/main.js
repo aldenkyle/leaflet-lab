@@ -1,13 +1,8 @@
 //GOAL: Proportional symbols representing attribute values of mapped features
 //STEPS:
-//1. Create the Leaflet map--done (in createMap())
-//2. Import GeoJSON data--done (in getData())
-//3. Add circle markers for point features to the map--done (in AJAX callback)
-//4. Determine which attribute to visualize with proportional symbols
-//5. For each feature, determine its value for the selected attribute
-//6. Give each feature's circle marker a radius based on its attribute value
 
-//1. Create the Leaflet map--done (in createMap())
+
+//1. Create the Leaflet map (in createMap())
 function createMap(){
     //create the map
     var map = L.map('map', {
@@ -20,9 +15,12 @@ function createMap(){
     //L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
      //   attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
     //}).addTo(map);
-     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-	attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
-}).addTo(map)
+     //L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'}).addTo(map)
+    
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+	attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+	maxZoom: 16
+    }).addTo(map)
     
     //move the zoom control
     L.control.zoom({
@@ -43,12 +41,11 @@ function calcPropRadius(attValue) {
     var area = Math.abs(attValue) * scaleFactor;
     //radius calculated based on area
     var radius = Math.sqrt(area/Math.PI);
-
     return radius;
 };
 
 
-//calculate a color for each proportional symbol
+//calculate a color for each proportional symbol for standard data
 function calcColor(attValue) {
     //scale factor to adjust symbol size evenly
     return attValue >= 125 ? '#330000' :
@@ -60,6 +57,7 @@ function calcColor(attValue) {
     '#fff5f0';
 };
 
+//calculate a color for each proportional symbol for change in PM2.5
 function calcColorChange(attValue) {
     //scale factor to adjust symbol size evenly
     return attValue >= 50 ? '#d73027' : // Means: if (d >= 1966) return 'green' else…
@@ -73,6 +71,7 @@ function calcColorChange(attValue) {
 };
 
 
+//calculate a color for each proportional symbol for % change in PM2.5
 function calcColorPctChange(attValue) {
     //scale factor to adjust symbol size evenly
     return attValue >= 50 ? '#67000d' : // Means: if (d >= 1966) return 'green' else…
@@ -121,33 +120,13 @@ function addSearch(map, data) {
             data.responseJSON.features[i].geometry.coordinates[1]
             //position found
 			marker = new L.Marker( new L.latLng([loc_lon, loc_lat]), {title:title, icon:circleIcon, opacity:0, fillOpacity:0} )
-            //marker = new L.Marker(new L.latLng([loc_lon, loc_lat]), {title:title});//se property searched
-        //console.log(title)
-		//marker.bindPopup('title: '+ title );
 		markersLayer.addLayer(marker);
 	}
 }
 
 
 
-//add search
-function addSearchSimple(map, data,markersLayer) {
-    var controlSearch = new L.Control.Search({
-		position:'topleft',		
-		layer: markersLayer,
-		initial: true, 
-		zoom: 12,
-		marker: false
-	});
-    map.addControl( controlSearch );
-    console.log(data.responseJSON.features[1])
-    
-}
-
-
-
-
-// function for circle markers
+// function for original circle markers
 function createPropSymbols(data, map, attributes, viztypes,markersLayer){
     //create marker default options
     var geojsonMarkerOptions = {
@@ -313,7 +292,7 @@ function manageSequence(map, data, attributes, viztype){
         updateLegend(map, data, attributes,viztype);
         //console.log(index)
     })
-    //update even if it wasnt clicked
+    //update even if it wasnt clicked (manageSequence is called by viztype)
     var index = $('.range-slider').val()
     updatePropSymbols(map, attributes[index], viztype);
     updateLegend(map, data, attributes,viztype);
@@ -442,13 +421,8 @@ function updateLegend(map, data, attributes,viztype2) {
         $('#legendTitle').html(content2); 
         var cirCon = document.getElementById('map').getElementsByClassName('symbolsContainer')[0]
         cirCon.innerHTML = ""
-            var min = getMin(data.responseJSON.features, attributes[range_index])
-            var max = getMax(data.responseJSON.features, attributes[range_index])
-            if (min < 10) {	min = 10;}
-                function roundNumber(inNumber) {
-                        return (Math.round(inNumber/10) * 10);  
-                }
-        var classes = [roundNumber(min), roundNumber((max-min)/2.5), roundNumber(max)]; 
+        cirCon.innerHTML = ""
+        var classes =  [10, 50, 100]; 
 		var legendCircle;
         var lastRadius = 0;
 		var currentRadius;
@@ -478,13 +452,7 @@ function updateLegend(map, data, attributes,viztype2) {
         $('#legendTitle').html(content3);
          var cirCon = document.getElementById('map').getElementsByClassName('symbolsContainer')[0]
         cirCon.innerHTML = ""
-            var min = getMin(data.responseJSON.features, attributes[range_index])
-            var max = getMax(data.responseJSON.features, attributes[range_index])
-            if (min < 10) {	min = 10;}
-                function roundNumber(inNumber) {
-                        return (Math.round(inNumber/10) * 10);  
-                }
-        var classes = [roundNumber(min), roundNumber((max-min)/2.5), roundNumber(max)]; 
+        var classes = [10, 75, 150]; 
 		var legendCircle;
         var lastRadius = 0;
 		var currentRadius;
