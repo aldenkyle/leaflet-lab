@@ -265,7 +265,7 @@ input[type="range"]:focus::-webkit-slider-thumb {
 	position: absolute;
 	right: 8px;
 }
-.info {
+.colorLegend {
 padding: 6px 8px;
 font: 14px/16px Arial, Helvetica, sans-serif;
 background: white;
@@ -273,7 +273,7 @@ background: rgba(255,255,255,0.8);
 box-shadow: 0 0 15px rgba(0,0,0,0.2);
 border-radius: 5px;
 }
-.legend i {
+.colorLegend i {
 width: 14px;
 height: 14px;
 float: left;
