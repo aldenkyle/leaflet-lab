@@ -74,8 +74,9 @@ function calcColorChange(attValue) {
 //calculate a color for each proportional symbol for % change in PM2.5
 function calcColorPctChange(attValue) {
     //scale factor to adjust symbol size evenly
-    return attValue >= 50 ? '#67000d' : // Means: if (d >= 1966) return 'green' else…
-    attValue >= 25 ? '#d73027' : // if (d >= 1960) return 'black' else etc…
+    return attValue >= 100 ? '#67000d' : // Means: if (d >= 1966) return 'green' else…
+    attValue >= 50 ? '#d73027' : // Means: if (d >= 1966) return 'green' else…
+    attValue >= 25 ? '#f46d43' : // if (d >= 1960) return 'black' else etc…
     attValue >= 10 ? '#fdae61' :
     attValue >= 0 ? '#fee08b' : // Note that numbers must be in descending order
     attValue >= -10 ? '#d9ef8b' : // Note that numbers must be in descending order
@@ -471,9 +472,9 @@ function updateLegend(map, data, attributes,viztype2) {
           //Update Color Legend
         var pp1CL =  document.getElementById('map').getElementsByClassName('colorLegend')[0]
         pp1CL.innerHTML = ""
-        var grades = [-50,-25,-10,.01, 10,25,50];
+        var grades = [-50,-25,-10,.01, 10,25,50,100];
         for (var i = 0; i < grades.length; i++) {
-        pp1CL.innerHTML += '<i style="background:' + calcColorChange(grades[i] + 1) + '"></i> ' + grades[i] + (grades[i + 1] ? '&nbsp;&ndash;&nbsp;' + grades[i + 1] + '<br>' : '+');
+        pp1CL.innerHTML += '<i style="background:' + calcColorPctChange(grades[i] + 1) + '"></i> ' + grades[i] + (grades[i + 1] ? '&nbsp;&ndash;&nbsp;' + grades[i + 1] + '<br>' : '+');
     }
     } 
     // end createLegend();
@@ -484,7 +485,7 @@ function updateLegend(map, data, attributes,viztype2) {
 //Step 2: Import GeoJSON data
 function getData(map){
     //load the data
-    var data = $.ajax("data/cities_pop_estimates_Feature.geojson", {
+    var data = $.ajax("https://raw.githubusercontent.com/aldenkyle/leaflet-lab/main/data/cities_pop_estimates_Feature.geojson", {
         dataType: "json",
         success: function(response){
              //create an attributes array, base year and base viz
