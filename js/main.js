@@ -485,7 +485,7 @@ function updateLegend(map, data, attributes,viztype2) {
 //Step 2: Import GeoJSON data
 function getData(map){
     //load the data
-    var data = $.ajax("https://raw.githubusercontent.com/aldenkyle/leaflet-lab/main/data/cities_pop_estimates_Feature.geojson", {
+    var data = $.ajax("https://raw.githubusercontent.com/aldenkyle/leaflet-lab/main/data/cities_pop_estimates_Feature.json", {
         dataType: "json",
         success: function(response){
              //create an attributes array, base year and base viz
