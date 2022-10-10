@@ -229,20 +229,17 @@ function selectVizType(map, data, attributes, viztype2) {
         if ($(this).attr('id') == 'ppm'){
             viztype2 = "ppm_viz"
             manageSequence(map,data, attributes, viztype2);
-           updateLegend(map, data, attributes,viztype2);
-            moveLegend(viztype2);
+           updateLegend(map, data, attributes,viztype2)
             ;}
          else if ($(this).attr('id') == 'ppm_change'){
             viztype2 = "ppm_change"
             manageSequence(map,data,attributes, viztype2);
-            updateLegend(map, data, attributes,viztype2);
-         moveLegend(viztype2);}
+             updateLegend(map, data, attributes,viztype2);}
          
          else if ($(this).attr('id') == 'ppm_pctChange'){
             viztype2 = "ppm_pctChange"
             manageSequence(map,data,attributes, viztype2);
          updateLegend(map, data, attributes,viztype2);
-             moveLegend(viztype2);
          }
     });
    
@@ -374,11 +371,11 @@ function createLegend(map, data, attributes,viztype) {
 			lastRadius = currentRadius;
 		}
 		$(legendContainer).append(symbolsContainer); 
-        //add the color legend inside the existing legend.
+        
         var div = L.DomUtil.create('div', 'colorLegend'),
         grades = [0,10,25,50,75,100,125];
         for (var i = 0; i < grades.length; i++) {
-        div.innerHTML +=  '<i style="background:' + calcColor(grades[i] + 1) + '"></i> ' + grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');};
+        div.innerHTML += '<i style="background:' + calcColor(grades[i] + 1) + '"></i> ' + grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');};
         
         $(legendContainer).append(div); 
 
@@ -498,56 +495,19 @@ function updateLegend(map, data, attributes,viztype2) {
 
 //figure out how to move legend exactly where I want it
 
-function moveLegend(viztype) {
-     if (viztype == "ppm_viz"){
-            var panel2h = $("#panel2").height() + 460;
-            var legendLoc = window.innerHeight - panel2h
-            var ltll = document.querySelector('.leaflet-top.leaflet-left')
-            ltll.style.top = legendLoc+"px";
-    // console.log(legendLoc)
-     }
-             //update color and size if percent change
-            else if (viztype == "ppm_change") {
-            var panel2h = $("#panel2").height() + 475;
-            var legendLoc = window.innerHeight - panel2h
-            var ltll = document.querySelector('.leaflet-top.leaflet-left')
-            ltll.style.top = legendLoc+"px";
-             // console.log(legendLoc)
-            }
-            //update color and size if percent change
-            else if ( viztype == "ppm_pctChange") {
-            var panel2h = $("#panel2").height() + 495;
-            var legendLoc = window.innerHeight - panel2h
-            var ltll = document.querySelector('.leaflet-top.leaflet-left')
-            ltll.style.top = legendLoc+"px";
-             // console.log(legendLoc)
-            }
-
+function moveLegend() {
+    var panel2h = $("#panel2").height() + 500
+    var legendLoc = window.innerHeight - panel2h
+    var ltll = document.querySelector('.leaflet-top.leaflet-left')
+    ltll.style.top = legendLoc+"px"
+    console.log(legendLoc+"px")
+    
     //resize when it moves
     addEventListener('resize', (event) => {});
-    onresize = (event) => {  if (viztype == "ppm_viz"){
-            var panel2h = $("#panel2").height() + 460;
-            var legendLoc = window.innerHeight - panel2h
-            var ltll = document.querySelector('.leaflet-top.leaflet-left')
-            ltll.style.top = legendLoc+"px";
-    // console.log(legendLoc)
-    }
-             //update color and size if percent change
-            else if (viztype == "ppm_change") {
-            var panel2h = $("#panel2").height() + 475;
-            var legendLoc = window.innerHeight - panel2h
-            var ltll = document.querySelector('.leaflet-top.leaflet-left')
-            ltll.style.top = legendLoc+"px";
-             // console.log(legendLoc)
-            }
-            //update color and size if percent change
-            else if ( viztype == "ppm_pctChange") {
-            var panel2h = $("#panel2").height() + 495;
-            var legendLoc = window.innerHeight - panel2h
-            var ltll = document.querySelector('.leaflet-top.leaflet-left')
-            ltll.style.top = legendLoc+"px";
-            //  console.log(legendLoc)
-            }};
+    onresize = (event) => {    var panel2h = $("#panel2").height() + 500;
+    var legendLoc = window.innerHeight - panel2h;
+    var ltll = document.querySelector('.leaflet-top.leaflet-left');
+    ltll.style.top = legendLoc+"px"};
 
 }
 
@@ -567,7 +527,7 @@ function getData(map){
             createLegend(map, data, attributes,viztype);
             selectVizType(map,data,attributes,viztype);
             manageSequence(map,data,attributes, viztype);
-            moveLegend(viztype);
+            moveLegend();
         }
     });
 };
