@@ -158,7 +158,10 @@ function createPropSymbols(data, map, attributes, viztypes,markersLayer){
             var markersLayer = L.circleMarker(latlng, geojsonMarkerOptions);
             //bind the popup to the circle marker
             markersLayer.bindPopup(popupContent)
+            var toolTipContent = feature.properties.Urban_Agglomeration ;
+            markersLayer.bindTooltip(toolTipContent)
             return markersLayer;  
+
             //add search
                 }
             }).addTo(map);
@@ -325,6 +328,17 @@ function getMin(arr, prop) {
 
 //create original legend
 function createLegend(map, data, attributes,viztype) {
+    // add color legend
+    var legend2 = L.control({position: 'topleft'});
+    legend2.onAdd = function(map) { 
+    var div = L.DomUtil.create('div', 'colorLegend'),
+    grades = [0,10,25,50,75,100,125];
+    for (var i = 0; i < grades.length; i++) {
+    div.innerHTML += '<i style="background:' + calcColor(grades[i] + 1) + '"></i> ' + grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+    }
+    return div;
+    };
+    //legend2.addTo(map);
     //console.log(viztype)
     var min = getMin(data.responseJSON.features, attributes[0])
     var max = getMax(data.responseJSON.features, attributes[0])
@@ -361,18 +375,7 @@ function createLegend(map, data, attributes,viztype) {
 		return legendContainer; 
 		};
 		legend.addTo(map);  
-// add color legend
-    var legend2 = L.control({position: 'topleft'});
-    legend2.onAdd = function(map) { 
-    var div = L.DomUtil.create('div', 'colorLegend'),
-    grades = [0,10,25,50,75,100,125];
-    for (var i = 0; i < grades.length; i++) {
-    div.innerHTML += '<i style="background:' + calcColor(grades[i] + 1) + '"></i> ' + grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
-    }
-    return div;
-    };
     legend2.addTo(map);
-    
 	} // end createLegend();
 
 
@@ -480,7 +483,23 @@ function updateLegend(map, data, attributes,viztype2) {
     // end createLegend();
 }
 
+//figure out how to move legend exactly where I want it
 
+function moveLegend() {
+    var panel2h = $("#panel2").height() + 500
+    var legendLoc = window.innerHeight - panel2h
+    var ltll = document.querySelector('.leaflet-top.leaflet-left')
+    ltll.style.top = legendLoc+"px"
+    console.log(legendLoc+"px")
+    
+    //resize when it moves
+    addEventListener('resize', (event) => {});
+    onresize = (event) => {    var panel2h = $("#panel2").height() + 500;
+    var legendLoc = window.innerHeight - panel2h;
+    var ltll = document.querySelector('.leaflet-top.leaflet-left');
+    ltll.style.top = legendLoc+"px"};
+
+}
 
 //Step 2: Import GeoJSON data
 function getData(map){
@@ -498,16 +517,13 @@ function getData(map){
             createLegend(map, data, attributes,viztype);
             selectVizType(map,data,attributes,viztype);
             manageSequence(map,data,attributes, viztype);
+            moveLegend();
         }
     });
 };
 
 
 
-
-
-
-
-
 $(document).ready(createMap);
+
 
